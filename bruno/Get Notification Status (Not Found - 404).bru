@@ -1,0 +1,15 @@
+meta {
+  name: Get Notification Status (Not Found - 404)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/notifications/does-not-exist
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}

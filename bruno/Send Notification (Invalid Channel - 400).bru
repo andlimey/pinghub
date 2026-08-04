@@ -1,0 +1,28 @@
+meta {
+  name: Send Notification (Invalid Channel - 400)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/notifications
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "userId": "user-123",
+    "channel": "carrier-pigeon",
+    "destination": "loft-1",
+    "message": "Should be rejected"
+  }
+}
+
+assert {
+  res.status: eq 400
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Get Notification Status
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/notifications/{{notificationId}}
+  body: none
+  auth: none
+}
+
+docs {
+  Run "Send Notification (Email - Success)" first — it captures the
+  returned id into the {{notificationId}} collection variable that
+  this request reads.
+}
+
+assert {
+  res.status: eq 200
+}
