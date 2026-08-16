@@ -1,23 +1,26 @@
 import { randomUUID } from "node:crypto";
 import type { Channel, NotificationRecord, SendNotificationRequest } from "./types.js";
 import type { NotificationStore } from "./store.js";
-import { channels } from "./channels/index.js";
+import { DELIVERY_JOB_NAME, type DeliveryJobData } from "./queue.js";
 
 const VALID_CHANNELS: Channel[] = ["sms", "email", "push"];
 const REQUIRED_FIELDS = ["userId", "channel", "destination", "message"] as const;
 
 export class ValidationError extends Error {}
 
+/** The subset of BullMQ's `Queue` API `NotificationService` needs — kept minimal so tests can stub it. */
+export interface DeliveryQueue {
+  add(name: string, data: DeliveryJobData): Promise<unknown>;
+}
+
 export class NotificationService {
-  constructor(private readonly store: NotificationStore) {}
+  constructor(
+    private readonly store: NotificationStore,
+    private readonly queue: DeliveryQueue
+  ) {}
 
   async send(request: SendNotificationRequest): Promise<NotificationRecord> {
     this.validate(request);
-
-    const sender = channels[request.channel];
-    const result = sender.send(request.destination, request.message, {
-      simulateFailure: request.simulateFailure,
-    });
 
     const record: NotificationRecord = {
       id: randomUUID(),
@@ -25,12 +28,16 @@ export class NotificationService {
       channel: request.channel,
       destination: request.destination,
       message: request.message,
-      status: result.success ? "delivered" : "failed",
-      error: result.error,
+      status: "queued",
       createdAt: new Date().toISOString(),
     };
 
     await this.store.save(record);
+    await this.queue.add(DELIVERY_JOB_NAME, {
+      notificationId: record.id,
+      simulateFailure: request.simulateFailure,
+    });
+
     return record;
   }
 

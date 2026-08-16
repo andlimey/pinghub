@@ -2,10 +2,11 @@ import express, { type Express } from "express";
 import { createRouter } from "./routes.js";
 import { NotificationService } from "./notificationService.js";
 import { NotificationStore } from "./store.js";
+import { deliveryQueue } from "./queue.js";
 
 export function createApp(): Express {
   const store = new NotificationStore();
-  const service = new NotificationService(store);
+  const service = new NotificationService(store, deliveryQueue);
 
   const app = express();
   app.use(express.json());

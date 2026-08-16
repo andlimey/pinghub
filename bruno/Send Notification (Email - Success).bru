@@ -30,6 +30,6 @@ script:post-response {
 }
 
 assert {
-  res.status: eq 201
-  res.body.status: eq delivered
+  res.status: eq 202
+  res.body.status: eq queued
 }

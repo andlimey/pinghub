@@ -1,0 +1,27 @@
+meta {
+  name: Get Notification Status (Failed)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/notifications/{{failedNotificationId}}
+  body: none
+  auth: none
+}
+
+docs {
+  Run "Send Notification (SMS - Simulated Failure)" first — it captures the
+  returned id into the {{failedNotificationId}} collection variable that
+  this request reads.
+
+  Delivery is async and retried: the worker retries a failing send with
+  backoff before giving up. Status may still read `queued`/`processing` if
+  run immediately — re-run this request a few seconds later (after the
+  configured retries have exhausted) to see it settle on `failed`, with the
+  simulated error recorded.
+}
+
+assert {
+  res.status: eq 200
+}

@@ -14,6 +14,10 @@ docs {
   Run "Send Notification (Email - Success)" first — it captures the
   returned id into the {{notificationId}} collection variable that
   this request reads.
+
+  Delivery is async, so status may still read `queued` or `processing`
+  immediately after sending — re-run this request a moment later if you
+  want to see it settle on `delivered`.
 }
 
 assert {

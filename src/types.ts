@@ -1,6 +1,6 @@
 export type Channel = "sms" | "email" | "push";
 
-export type NotificationStatus = "delivered" | "failed";
+export type NotificationStatus = "queued" | "processing" | "delivered" | "failed";
 
 export interface SendNotificationRequest {
   userId: string;

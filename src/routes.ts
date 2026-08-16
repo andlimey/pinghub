@@ -7,7 +7,7 @@ export function createRouter(service: NotificationService): Router {
   router.post("/notifications", async (req, res) => {
     try {
       const record = await service.send(req.body ?? {});
-      res.status(201).json(record);
+      res.status(202).json({ id: record.id, status: record.status });
     } catch (err) {
       if (err instanceof ValidationError) {
         res.status(400).json({ error: err.message });

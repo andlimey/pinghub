@@ -18,19 +18,19 @@
 
 ## 3. Async queue + worker
 
-- [ ] 3.1 Add `bullmq` and `ioredis` dependencies
-- [ ] 3.2 Add a Redis service to `docker-compose.yml`
-- [ ] 3.3 Expand `NotificationStatus` to `queued | processing | delivered | failed` in `src/types.ts`
-- [ ] 3.4 Create a queue module wrapping BullMQ, defining the delivery job name and payload shape
-- [ ] 3.5 Update `notificationService` so a valid request is validated synchronously, saved with status `queued`, and enqueued as a job — without waiting for delivery
-- [ ] 3.6 Update the `POST /notifications` route to respond `202` with `{ id, status }` immediately after enqueueing
-- [ ] 3.7 Create a worker entrypoint (`src/worker.ts`) as a process separate from `src/index.ts`
-- [ ] 3.8 Implement the worker's job processor: mark the record `processing`, call the (still-mocked) channel sender, then mark `delivered`/`failed`
-- [ ] 3.9 Configure a retry policy (`attempts`/backoff) on the queue for job failures, distinct from validation errors (which never reach the queue)
-- [ ] 3.10 Add a `worker` script to `package.json` alongside `dev`/`start`
-- [ ] 3.11 Add/update tests covering the async flow — enqueue, worker processing, status transitions — against the mock channels
-- [ ] 3.12 Update the Bruno collection for the new `202` response and a status-polling step
-- [ ] 3.13 Update the README's architecture and data-flow sections for the async model
+- [x] 3.1 Add `bullmq` and `ioredis` dependencies
+- [x] 3.2 Add a Redis service to `docker-compose.yml`
+- [x] 3.3 Expand `NotificationStatus` to `queued | processing | delivered | failed` in `src/types.ts`
+- [x] 3.4 Create a queue module wrapping BullMQ, defining the delivery job name and payload shape
+- [x] 3.5 Update `notificationService` so a valid request is validated synchronously, saved with status `queued`, and enqueued as a job — without waiting for delivery
+- [x] 3.6 Update the `POST /notifications` route to respond `202` with `{ id, status }` immediately after enqueueing
+- [x] 3.7 Create a worker entrypoint (`src/worker.ts`) as a process separate from `src/index.ts`
+- [x] 3.8 Implement the worker's job processor: mark the record `processing`, call the (still-mocked) channel sender, then mark `delivered`/`failed`
+- [x] 3.9 Configure a retry policy (`attempts`/backoff) on the queue for job failures, distinct from validation errors (which never reach the queue)
+- [x] 3.10 Add a `worker` script to `package.json` alongside `dev`/`start`
+- [x] 3.11 Add/update tests covering the async flow — enqueue, worker processing, status transitions — against the mock channels
+- [x] 3.12 Update the Bruno collection for the new `202` response and a status-polling step
+- [x] 3.13 Update the README's architecture and data-flow sections for the async model
 
 ## 4. Email via Resend
 

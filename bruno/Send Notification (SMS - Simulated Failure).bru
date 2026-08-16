@@ -24,7 +24,20 @@ body:json {
   }
 }
 
+script:post-response {
+  if (res.body && res.body.id) {
+    bru.setVar("failedNotificationId", res.body.id);
+  }
+}
+
+docs {
+  Delivery is async: the response here is always `202 queued`, even though
+  `simulateFailure: true` will make every delivery attempt fail. Run "Get
+  Notification Status (Failed)" a moment later, once the worker has
+  exhausted its retries, to see the final `failed` status and error.
+}
+
 assert {
-  res.status: eq 201
-  res.body.status: eq failed
+  res.status: eq 202
+  res.body.status: eq queued
 }
