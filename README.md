@@ -20,14 +20,14 @@ here so a future session doesn't "fix" them without knowing why:
 | Stack | Node + TypeScript + Express | Matches the pnpm/JS convention already established for this user's projects. Express (not Rails/Sinatra) was picked over a fuller framework so the retry/dispatch/history mechanics are hand-built rather than hidden behind convention — that's the actual learning content. |
 | Channel selection | Caller specifies the channel explicitly in the request | No preference store, no fallback logic. Simplest possible API; "picking the channel" for the caller is a feature that can be layered on later without changing the core send/record flow. |
 | Retries | None — single delivery attempt, outcome recorded either way | Explicitly deferred. "Remembering what happened" (the history/status API) was judged more foundational to build first; retry logic can be added later as a wrapper around the existing `ChannelSender.send()` call in `notificationService.ts` without changing its interface. |
-| Persistence | In-memory `Map`, resets on restart | Keeps focus on the API/orchestration logic instead of DB setup. `NotificationStore` is a small, isolated class specifically so it can be swapped for a real DB-backed implementation later without touching the service or routes. |
+| Persistence | Postgres-backed `NotificationStore`, run locally via Docker Compose | Notification history survives restarts. `NotificationStore` kept the same `save`/`get` interface it was originally built with, so the service and routes needed no changes to absorb the swap from the original in-memory `Map`. |
 | Message rendering | Caller sends final message text | No templating layer. PingHub only routes and delivers; rendering is out of scope for this MVP. |
 | Destination / contact info | Caller includes it directly in the request (e.g. `destination: "a@b.com"`) | No user directory. Avoids building user-management just to demo delivery. |
 | Mock failure | Caller can force a failure via `simulateFailure: true` in the request | Deterministic and testable, unlike random failure — lets you exercise the "failed" status path on demand instead of hoping for bad luck. |
 | API surface | `POST /notifications` + `GET /notifications/:id` | Minimal surface covering "send" and "check what happened." No list/browse endpoint yet. |
 
 **Deliberately out of scope for this iteration**: retries/backoff, a
-per-user channel-preference store, message templating, persistent storage,
+per-user channel-preference store, message templating,
 a `GET /notifications` list endpoint, authentication (single company/tenant
 is assumed), and rate limiting.
 
@@ -36,7 +36,9 @@ is assumed), and rate limiting.
 ```
 src/
   types.ts               Shared types: Channel, NotificationRecord, ChannelSender interface
-  store.ts                NotificationStore — in-memory history (Map<id, record>)
+  config.ts               Environment-based configuration (PORT, DATABASE_URL, REDIS_URL, ...)
+  db.ts                    Postgres connection pool + schema migration
+  store.ts                NotificationStore — Postgres-backed history (save/get)
   channels/
     sms.ts, email.ts, push.ts   Mock channel integrations, each implementing ChannelSender
     index.ts               Maps Channel -> the corresponding mock sender
@@ -63,22 +65,50 @@ real Twilio/SES/FCM integration later means replacing the body of one file —
    returns a channel-specific simulated error.
 4. The service builds a `NotificationRecord` (with a generated `id`,
    `status: "delivered" | "failed"`, and `error` if failed), saves it to the
-   in-memory store, and returns it. The route responds `201`.
+   Postgres-backed store, and returns it. The route responds `201`.
 5. `GET /notifications/:id` looks up and returns the record, or `404` if the
    id is unknown.
 
-## Running it
+## Configuration
+
+Copy `.env.example` to `.env` and fill in the values:
 
 ```bash
+cp .env.example .env
+```
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `PORT` | No (default `3000`) | HTTP port the API listens on |
+| `DATABASE_URL` | Yes | Postgres connection string |
+| `REDIS_URL` | Yes | Redis connection string, used by the BullMQ job queue |
+| `RESEND_API_KEY` | Phase 4+ | Resend API key for email delivery |
+| `FIREBASE_SERVICE_ACCOUNT` | Phase 5+ | Firebase service account (path or JSON) for push delivery |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | Phase 6+ | Twilio credentials for SMS delivery |
+
+`src/config.ts` loads `.env` via `dotenv` in development and is the only place
+that reads `process.env` — everything else imports `config` from there.
+`DATABASE_URL` and `REDIS_URL` are required at startup even before the
+Postgres/Redis-backed code that uses them ships, so set them in `.env` before
+running `pnpm dev`.
+
+## Running it
+
+Local dev requires Postgres, run via Docker Compose:
+
+```bash
+docker compose up -d      # starts local Postgres, once, before the app
 pnpm install
 pnpm dev          # start with auto-reload (tsx watch)
 pnpm start        # start without watch
 pnpm build        # typecheck + compile src/ to dist/
 pnpm typecheck     # typecheck src/ and test/ together, no emit
-pnpm test          # run the vitest suite
+pnpm test          # run the vitest suite (also needs Postgres running)
 ```
 
-The server listens on `PORT` (default `3000`).
+The server listens on `PORT` (default `3000`). The `notifications` table is
+created automatically on first connection (see `src/db.ts`); the same
+schema is also applied via `db/init.sql` on the container's first boot.
 
 ## API reference
 
@@ -138,6 +168,7 @@ npx @usebruno/cli run --env Local -r
 - `test/channels.test.ts` — each mock channel succeeds by default and fails
   when `simulateFailure` is set.
 - `test/notificationService.test.ts` — validation, dispatch, and store
-  interaction, independent of HTTP.
+  interaction, independent of HTTP. Runs against the real local Postgres
+  instance (`docker compose up -d` must be running).
 - `test/app.test.ts` — integration tests over the Express routes via
-  `supertest`.
+  `supertest`. Also requires local Postgres to be running.

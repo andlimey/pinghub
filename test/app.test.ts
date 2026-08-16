@@ -1,8 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 import request from "supertest";
 import { createApp } from "../src/app.js";
+import { pool } from "../src/db.js";
 
 describe("PingHub API", () => {
+  afterAll(async () => {
+    await pool.end();
+  });
+
   it("POST /notifications sends and returns a delivered notification", async () => {
     const app = createApp();
 

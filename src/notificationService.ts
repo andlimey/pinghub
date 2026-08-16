@@ -11,7 +11,7 @@ export class ValidationError extends Error {}
 export class NotificationService {
   constructor(private readonly store: NotificationStore) {}
 
-  send(request: SendNotificationRequest): NotificationRecord {
+  async send(request: SendNotificationRequest): Promise<NotificationRecord> {
     this.validate(request);
 
     const sender = channels[request.channel];
@@ -30,11 +30,11 @@ export class NotificationService {
       createdAt: new Date().toISOString(),
     };
 
-    this.store.save(record);
+    await this.store.save(record);
     return record;
   }
 
-  getById(id: string): NotificationRecord | undefined {
+  getById(id: string): Promise<NotificationRecord | undefined> {
     return this.store.get(id);
   }
 

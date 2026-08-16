@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { NotificationService, ValidationError } from "../src/notificationService.js";
 import { NotificationStore } from "../src/store.js";
+import { pool } from "../src/db.js";
 
 describe("NotificationService", () => {
   let service: NotificationService;
@@ -9,8 +10,12 @@ describe("NotificationService", () => {
     service = new NotificationService(new NotificationStore());
   });
 
-  it("sends a notification and records it as delivered", () => {
-    const record = service.send({
+  afterAll(async () => {
+    await pool.end();
+  });
+
+  it("sends a notification and records it as delivered", async () => {
+    const record = await service.send({
       userId: "user-1",
       channel: "email",
       destination: "a@b.com",
@@ -20,11 +25,11 @@ describe("NotificationService", () => {
     expect(record.status).toBe("delivered");
     expect(record.error).toBeUndefined();
     expect(record.id).toBeTruthy();
-    expect(service.getById(record.id)).toEqual(record);
+    expect(await service.getById(record.id)).toEqual(record);
   });
 
-  it("records a failed delivery when simulateFailure is set", () => {
-    const record = service.send({
+  it("records a failed delivery when simulateFailure is set", async () => {
+    const record = await service.send({
       userId: "user-1",
       channel: "sms",
       destination: "+15555550100",
@@ -36,27 +41,27 @@ describe("NotificationService", () => {
     expect(record.error).toBeTruthy();
   });
 
-  it("rejects missing required fields", () => {
-    expect(() =>
+  it("rejects missing required fields", async () => {
+    await expect(
       service.send({
         userId: "user-1",
         channel: "sms",
       } as never)
-    ).toThrow(ValidationError);
+    ).rejects.toThrow(ValidationError);
   });
 
-  it("rejects an invalid channel", () => {
-    expect(() =>
+  it("rejects an invalid channel", async () => {
+    await expect(
       service.send({
         userId: "user-1",
         channel: "carrier-pigeon" as never,
         destination: "loft-1",
         message: "hi",
       })
-    ).toThrow(ValidationError);
+    ).rejects.toThrow(ValidationError);
   });
 
-  it("returns undefined for an unknown id", () => {
-    expect(service.getById("does-not-exist")).toBeUndefined();
+  it("returns undefined for an unknown id", async () => {
+    expect(await service.getById("does-not-exist")).toBeUndefined();
   });
 });

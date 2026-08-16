@@ -1,8 +1,8 @@
 import { createApp } from "./app.js";
+import { config } from "./config.js";
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const app = createApp();
 
-app.listen(PORT, () => {
-  console.log(`PingHub listening on http://localhost:${PORT}`);
+app.listen(config.port, () => {
+  console.log(`PingHub listening on http://localhost:${config.port}`);
 });

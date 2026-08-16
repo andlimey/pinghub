@@ -4,9 +4,9 @@ import { NotificationService, ValidationError } from "./notificationService.js";
 export function createRouter(service: NotificationService): Router {
   const router = Router();
 
-  router.post("/notifications", (req, res) => {
+  router.post("/notifications", async (req, res) => {
     try {
-      const record = service.send(req.body ?? {});
+      const record = await service.send(req.body ?? {});
       res.status(201).json(record);
     } catch (err) {
       if (err instanceof ValidationError) {
@@ -18,8 +18,8 @@ export function createRouter(service: NotificationService): Router {
     }
   });
 
-  router.get("/notifications/:id", (req, res) => {
-    const record = service.getById(req.params.id);
+  router.get("/notifications/:id", async (req, res) => {
+    const record = await service.getById(req.params.id);
     if (!record) {
       res.status(404).json({ error: "Notification not found" });
       return;
