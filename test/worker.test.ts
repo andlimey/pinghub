@@ -27,9 +27,9 @@ describe("deliverNotification", () => {
   }
 
   it("marks the record processing then delivered on a successful send", async () => {
-    // "push" and "sms" stay pure mocks; "email" now makes a real Resend call
-    // (covered separately in emailChannel.test.ts) so it's excluded here.
-    const record = await seedQueued("push");
+    // "sms" is the only channel still a pure mock; "email" and "push" now make
+    // real provider calls (covered separately in their own channel tests).
+    const record = await seedQueued("sms");
 
     await deliverNotification(
       store,
@@ -58,7 +58,7 @@ describe("deliverNotification", () => {
   });
 
   it("marks the record failed with the error once the final attempt is exhausted", async () => {
-    const record = await seedQueued("push");
+    const record = await seedQueued("sms");
 
     await expect(
       deliverNotification(

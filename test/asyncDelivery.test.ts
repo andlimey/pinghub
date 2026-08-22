@@ -49,9 +49,9 @@ describe("async delivery pipeline (real queue + worker)", () => {
   }
 
   it("moves a queued job through processing to delivered", async () => {
-    // "push" stays a pure mock; "email" now makes a real Resend call
-    // (covered separately in emailChannel.test.ts) so it's excluded here.
-    const record = await seedQueued("push");
+    // "sms" is the only channel still a pure mock; "email" and "push" now make
+    // real provider calls (covered separately in their own channel tests).
+    const record = await seedQueued("sms");
 
     await deliveryQueue.add(DELIVERY_JOB_NAME, { notificationId: record.id });
 

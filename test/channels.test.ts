@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { smsChannel } from "../src/channels/sms.js";
-import { pushChannel } from "../src/channels/push.js";
 
-describe.each([
-  ["sms", smsChannel],
-  ["push", pushChannel],
-] as const)("%s channel", (_name, channel) => {
+describe.each([["sms", smsChannel]] as const)("%s channel", (_name, channel) => {
   it("succeeds by default", async () => {
     const result = await channel.send("dest", "hello");
     expect(result.success).toBe(true);

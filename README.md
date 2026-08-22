@@ -24,11 +24,13 @@ here so a future session doesn't "fix" them without knowing why:
 | Persistence | Postgres-backed `NotificationStore`, run locally via Docker Compose | Notification history survives restarts and is visible to both the API and worker processes, which no longer share memory. `NotificationStore` kept the same `save`/`get` interface it was originally built with, so the service and routes needed no changes to absorb the swap from the original in-memory `Map`. |
 | Message rendering | Caller sends final message text | No templating layer. PingHub only routes and delivers; rendering is out of scope for this MVP. |
 | Destination / contact info | Caller includes it directly in the request (e.g. `destination: "a@b.com"`) | No user directory. Avoids building user-management just to demo delivery. |
+| Push destination | Caller supplies a real FCM device token as `destination`, same as SMS/email | There is no device directory (no per-user token registry), so there's no way to look up "the token for this user." In practice this means testing/using the push channel means obtaining one real token from a test client app and passing it as `destination` by hand — accepted as a named gap, not a bug, consistent with the "no user directory" decision above. |
 | Mock failure | Caller can force a failure via `simulateFailure: true` in the request | Deterministic and testable, unlike random failure — lets you exercise the "failed" status path on demand instead of hoping for bad luck. |
 | API surface | `POST /notifications` + `GET /notifications/:id` | Minimal surface covering "send" and "check what happened." No list/browse endpoint yet. |
 
 **Deliberately out of scope for this iteration**: a per-user
-channel-preference store, message templating, a `GET /notifications` list
+channel-preference store, a push-token/device directory (see "Push
+destination" above), message templating, a `GET /notifications` list
 endpoint, authentication (single company/tenant is assumed), and rate
 limiting.
 

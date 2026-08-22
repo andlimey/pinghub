@@ -13,4 +13,6 @@ export const config = {
   databaseUrl: required("DATABASE_URL"),
   redisUrl: required("REDIS_URL"),
   resendApiKey: required("RESEND_API_KEY"),
+  /** Firebase service account, as a file path or raw JSON — see .env.example. */
+  firebaseServiceAccount: required("FIREBASE_SERVICE_ACCOUNT"),
 };

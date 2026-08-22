@@ -42,12 +42,12 @@
 
 ## 5. Push via Firebase Cloud Messaging
 
-- [ ] 5.1 Add the `firebase-admin` dependency
-- [ ] 5.2 Add Firebase service account credentials to the config module and `.env.example`
-- [ ] 5.3 Implement the real FCM call in `src/channels/push.ts`
-- [ ] 5.4 Document the hardcoded test device token used as the destination stand-in, and the absence of a device directory, as a named and accepted gap
-- [ ] 5.5 Update the push channel test to cover the real integration (mocking the Admin SDK) while keeping the success/failure contract intact
-- [ ] 5.6 Manually verify one real end-to-end push send against a test device token
+- [x] 5.1 Add the `firebase-admin` dependency
+- [x] 5.2 Add Firebase service account credentials to the config module and `.env.example`
+- [x] 5.3 Implement the real FCM call in `src/channels/push.ts`
+- [x] 5.4 Document the hardcoded test device token used as the destination stand-in, and the absence of a device directory, as a named and accepted gap
+- [x] 5.5 Update the push channel test to cover the real integration (mocking the Admin SDK) while keeping the success/failure contract intact
+- [x] 5.6 Manually verify one real end-to-end push send against a test device token
 
 ## 6. SMS via Twilio
 
