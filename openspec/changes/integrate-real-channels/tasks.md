@@ -34,11 +34,11 @@
 
 ## 4. Email via Resend
 
-- [ ] 4.1 Add the `resend` dependency
-- [ ] 4.2 Add `RESEND_API_KEY` to the config module and `.env.example`
-- [ ] 4.3 Implement the real Resend call in `src/channels/email.ts`, now async, behind the existing `ChannelSender` contract
-- [ ] 4.4 Update the email channel test to cover the real integration (mocking the Resend client) while keeping the success/failure contract intact
-- [ ] 4.5 Manually verify one real end-to-end email send
+- [x] 4.1 Add the `resend` dependency
+- [x] 4.2 Add `RESEND_API_KEY` to the config module and `.env.example`
+- [x] 4.3 Implement the real Resend call in `src/channels/email.ts`, now async, behind the existing `ChannelSender` contract
+- [x] 4.4 Update the email channel test to cover the real integration (mocking the Resend client) while keeping the success/failure contract intact
+- [x] 4.5 Manually verify one real end-to-end email send
 
 ## 5. Push via Firebase Cloud Messaging
 

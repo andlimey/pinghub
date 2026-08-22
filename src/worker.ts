@@ -23,7 +23,7 @@ export async function deliverNotification(
   await store.save({ ...record, status: "processing" });
 
   const sender = channels[record.channel];
-  const result = sender.send(record.destination, record.message, {
+  const result = await sender.send(record.destination, record.message, {
     simulateFailure: data.simulateFailure,
   });
 

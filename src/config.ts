@@ -12,4 +12,5 @@ export const config = {
   port: process.env.PORT ? Number(process.env.PORT) : 3000,
   databaseUrl: required("DATABASE_URL"),
   redisUrl: required("REDIS_URL"),
+  resendApiKey: required("RESEND_API_KEY"),
 };

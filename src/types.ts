@@ -32,5 +32,5 @@ export interface ChannelSender {
     destination: string,
     message: string,
     opts?: { simulateFailure?: boolean }
-  ): ChannelSendResult;
+  ): ChannelSendResult | Promise<ChannelSendResult>;
 }

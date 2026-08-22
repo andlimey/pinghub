@@ -27,7 +27,9 @@ describe("deliverNotification", () => {
   }
 
   it("marks the record processing then delivered on a successful send", async () => {
-    const record = await seedQueued("email");
+    // "push" and "sms" stay pure mocks; "email" now makes a real Resend call
+    // (covered separately in emailChannel.test.ts) so it's excluded here.
+    const record = await seedQueued("push");
 
     await deliverNotification(
       store,
