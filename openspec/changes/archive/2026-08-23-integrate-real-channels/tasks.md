@@ -51,6 +51,8 @@
 
 ## 6. SMS via Twilio
 
+**Deferred**: built and unit-tested (dependency, config, real Twilio call, mocked-client tests), then reverted. Real verification is blocked by Singapore's IMDA SMS Sender ID Registry, which requires a registered alphanumeric Sender ID before *any* provider can deliver SMS to a Singapore number — the only test destination available. See `design.md`'s Risks section and the README's "SMS delivery" design decision. Revisit once the registration is done or a non-Singapore test destination is available.
+
 - [ ] 6.1 Add the `twilio` dependency
 - [ ] 6.2 Add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER` to the config module and `.env.example`
 - [ ] 6.3 Implement the real Twilio call in `src/channels/sms.ts`

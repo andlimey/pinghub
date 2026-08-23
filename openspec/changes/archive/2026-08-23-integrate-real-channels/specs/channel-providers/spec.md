@@ -22,16 +22,18 @@ The system SHALL deliver `push` channel notifications through Firebase Cloud Mes
 - **WHEN** Firebase Cloud Messaging returns an error for a send attempt, such as an invalid or expired token
 - **THEN** the system records the failure reason returned by Firebase Cloud Messaging
 
-### Requirement: SMS delivery via Twilio
-The system SHALL deliver `sms` channel notifications through the Twilio API.
+### Requirement: SMS delivery remains mocked, pending Singapore Sender ID registration
+The system SHALL simulate `sms` channel delivery via a mock sender rather than a real carrier API, until Singapore's IMDA SMS Sender ID Registry requirement is satisfied or a non-Singapore test destination is available.
 
-#### Scenario: Successful SMS send
+A real Twilio integration was built and unit-tested against a mocked client, but real end-to-end delivery is blocked: Singapore requires every SMS provider — not just Twilio — to have a registered alphanumeric Sender ID before delivering to a Singapore number, and the only available test destination is a Singapore number. See `design.md`'s Risks section for detail.
+
+#### Scenario: Successful mock SMS send
 - **WHEN** a queued notification with channel `sms` is processed
-- **THEN** the system calls the Twilio API with the destination phone number and message, and records success on a successful response
+- **THEN** the system logs the send and records success, without contacting a real carrier API
 
-#### Scenario: Failed SMS send
-- **WHEN** the Twilio API returns an error for a send attempt
-- **THEN** the system records the failure reason returned by Twilio
+#### Scenario: Simulated SMS failure
+- **WHEN** the request set `simulateFailure: true`
+- **THEN** the system records a simulated failure reason, without contacting a real carrier API
 
 ### Requirement: Common asynchronous send contract across channels
 Each channel provider integration SHALL implement the same asynchronous send contract, so the delivery pipeline can dispatch to any channel without channel-specific logic outside that channel's own module.
