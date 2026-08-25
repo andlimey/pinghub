@@ -62,6 +62,44 @@ Each mock channel module implements the same `ChannelSender` interface
 real Twilio/SES/FCM integration later means replacing the body of one file —
 everything upstream of `channels/` is unaffected.
 
+### Diagram
+
+```mermaid
+flowchart LR
+    Client(["Caller"])
+
+    subgraph apiProc["API process (src/index.ts)"]
+        Routes["routes.ts"] --> Service["notificationService.ts"]
+    end
+
+    subgraph workerProc["Worker process (src/worker.ts)"]
+        Worker["deliverNotification"]
+    end
+
+    subgraph channels["channels/"]
+        SMS["sms.ts (mocked)"]
+        Email["email.ts → Resend"]
+        Push["push.ts → FCM"]
+    end
+
+    DB[("Postgres\nnotifications table")]
+    Queue[["Redis / BullMQ queue"]]
+
+    Client -->|"POST /notifications"| Routes
+    Client -->|"GET /notifications/:id"| Routes
+    Routes -->|"read status"| DB
+    Service -->|"save record (queued)"| DB
+    Service -->|"enqueue delivery job"| Queue
+    Queue -->|"job picked up"| Worker
+    Worker -->|"mark processing / delivered / failed"| DB
+    Worker --> SMS
+    Worker --> Email
+    Worker --> Push
+```
+
+The API and worker are separate processes, connected only through Postgres
+and Redis — never through shared memory.
+
 ### Data flow
 
 The API (`src/index.ts`) and the worker (`src/worker.ts`) are separate
@@ -103,9 +141,9 @@ cp .env.example .env
 | `PORT` | No (default `3000`) | HTTP port the API listens on |
 | `DATABASE_URL` | Yes | Postgres connection string |
 | `REDIS_URL` | Yes | Redis connection string, used by the BullMQ job queue |
-| `RESEND_API_KEY` | Phase 4+ | Resend API key for email delivery |
-| `FIREBASE_SERVICE_ACCOUNT` | Phase 5+ | Firebase service account (path or JSON) for push delivery |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | Phase 6+ | Twilio credentials for SMS delivery |
+| `RESEND_API_KEY` | Yes | Resend API key for email delivery |
+| `FIREBASE_SERVICE_ACCOUNT` | Yes | Firebase service account (path or JSON) for push delivery |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | No — SMS is currently mocked (see "SMS delivery" above) | Twilio credentials for SMS delivery, unused until the SMS channel is switched over |
 
 `src/config.ts` loads `.env` via `dotenv` in development and is the only place
 that reads `process.env` — everything else imports `config` from there.
